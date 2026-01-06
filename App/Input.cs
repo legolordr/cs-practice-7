@@ -8,25 +8,25 @@ public static class Input
     /// <summary>
     /// Считывает от пользователя URL файлов из интернета.
     /// </summary>
-    public static string[] GetUris()
+    public static string[] GetUrls()
     {
         string[] result = [];
-        var valid = false;
-        while (valid is false)
+        var valid = true;
+        while (valid)
         {
             Console.Write("Введите нужные URL через пробел: ");
             result = Console.ReadLine()!.Split(' ');
-            valid = result.Any(x => IsValidUri(x) is false);
-            if (valid is false)
+            
+            valid = result.Any(x => IsValidUrl(x) is false);
+            if (valid)
             {
                 Console.WriteLine("Ошибка! Вы ввели некорректные URL!");
             }
         }
-
         return result;
     }
 
-    private static bool IsValidUri(string uri) => uri.StartsWith("https://");
+    private static bool IsValidUrl(string url) => url.StartsWith("https://");
     
     
     /// <summary>
@@ -36,11 +36,31 @@ public static class Input
     {
         while (true)
         {
-            Console.Write("Введите путь до файла с результатом: ");
+            Console.WriteLine("\nВведите путь до файла с результатом: ");
             try
             {
                 var file = new FileInfo(Console.ReadLine()!);
+                if (file.Exists)
+                {
+                    Console.Write(
+                        "Файл уже существует, вы хотите его перезаписать?\n 1. Да\n 2. Нет\n Нажмите соответствующую цифру");
+                    char number = Console.ReadKey().KeyChar;
+                    switch (number)
+                    {
+                        case '1':
+                            return file;
+                        case '2':
+                            continue;
+                        default:
+                            throw new ArgumentException("\nНажата некорректная клавиша.");
+                    }
+                }
+
                 return file;
+            }
+            catch (ArgumentException e)
+            {
+                Console.WriteLine(e.Message);
             }
             catch
             {

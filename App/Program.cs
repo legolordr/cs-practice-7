@@ -1,17 +1,50 @@
 ﻿using App;
 
-var cts = new CancellationTokenSource();
-Console.CancelKeyPress += (_, _) => cts.Cancel();
-
-var uris = Input.GetUris();
+var urls = Input.GetUrls();
 var dest = Input.GetOutputFile();
-var destStream = dest.OpenWrite();
+bool deletefile = false;
 
-await Parallel.ForEachAsync(uris, cts.Token, async (uri, ct) =>
+var cts = new CancellationTokenSource();
+Console.CancelKeyPress += (_, e) =>
 {
-    using var http = new HttpClient();
-    await using var content = await http.GetStreamAsync(uri, ct);
-    await content.CopyToAsync(destStream, ct);
-});
+    cts.Cancel();
+    deletefile = true;
+    e.Cancel = true;
+};
 
-await destStream.DisposeAsync();
+{
+    await using var destStream = dest.OpenWrite();
+    using var http = new HttpClient();
+    
+    try
+    {
+        await Parallel.ForEachAsync(urls, cts.Token, async (url, ct) =>
+        {
+            try
+            {
+                await using var content = await http.GetStreamAsync(url, ct);
+                await content.CopyToAsync(destStream, ct);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        });
+    }
+    catch (OperationCanceledException)
+    {
+        Console.WriteLine("Canceled");
+    }
+}
+
+
+dest.Refresh();
+
+if (deletefile && dest.Exists)
+{
+    dest.Delete();
+}
+else if (dest.Exists)
+{
+    Count.Counter(dest);
+}
