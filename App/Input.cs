@@ -43,7 +43,7 @@ public static class Input
                 if (file.Exists)
                 {
                     Console.Write(
-                        "Файл уже существует, вы хотите его перезаписать?\n 1. Да\n 2. Нет\n Нажмите соответствующую цифру");
+                        "Файл уже существует, вы хотите его перезаписать?\n 1. Да\n 2. Нет\nНажмите соответствующую цифру");
                     char number = Console.ReadKey().KeyChar;
                     switch (number)
                     {

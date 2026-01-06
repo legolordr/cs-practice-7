@@ -15,11 +15,13 @@ Console.CancelKeyPress += (_, e) =>
 {
     await using var destStream = dest.OpenWrite();
     using var http = new HttpClient();
+    var semaphore = new SemaphoreSlim(1, 1);
     
     try
     {
         await Parallel.ForEachAsync(urls, cts.Token, async (url, ct) =>
         {
+            await semaphore.WaitAsync(cts.Token);
             try
             {
                 await using var content = await http.GetStreamAsync(url, ct);
@@ -28,6 +30,10 @@ Console.CancelKeyPress += (_, e) =>
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
+            }
+            finally
+            {
+                semaphore.Release();
             }
         });
     }
