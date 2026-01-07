@@ -11,14 +11,14 @@ public static class Input
     public static string[] GetUrls()
     {
         string[] result = [];
-        var valid = true;
-        while (valid)
+        var valid = false;
+        while (valid is false)
         {
             Console.Write("Введите нужные URL через пробел: ");
             result = Console.ReadLine()!.Split(' ');
             
-            valid = result.Any(x => IsValidUrl(x) is false);
-            if (valid)
+            valid = result.All(x => IsValidUrl(x));
+            if (valid is false)
             {
                 Console.WriteLine("Ошибка! Вы ввели некорректные URL!");
             }
@@ -26,8 +26,12 @@ public static class Input
         return result;
     }
 
-    private static bool IsValidUrl(string url) => url.StartsWith("https://");
-    
+    private static bool IsValidUrl(string url)
+    {
+        bool isUri = Uri.TryCreate(url, UriKind.Absolute, out var uriResult);
+        bool isHttp = uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps;
+        return isUri && isHttp;
+    }
     
     /// <summary>
     /// Считывает от пользователя путь до файла с результатом.
@@ -43,13 +47,13 @@ public static class Input
                 if (file.Exists)
                 {
                     Console.Write(
-                        "Файл уже существует, вы хотите его перезаписать?\n 1. Да\n 2. Нет\nНажмите соответствующую цифру");
+                        "Файл уже существует, вы хотите его перезаписать? (y/n)");
                     char number = Console.ReadKey().KeyChar;
                     switch (number)
                     {
-                        case '1':
+                        case 'y':
                             return file;
-                        case '2':
+                        case 'n':
                             continue;
                         default:
                             throw new ArgumentException("\nНажата некорректная клавиша.");

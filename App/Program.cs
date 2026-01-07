@@ -21,10 +21,12 @@ Console.CancelKeyPress += (_, e) =>
     {
         await Parallel.ForEachAsync(urls, cts.Token, async (url, ct) =>
         {
-            await semaphore.WaitAsync(cts.Token);
+            bool isSemaphore = false;
             try
             {
                 await using var content = await http.GetStreamAsync(url, ct);
+                await semaphore.WaitAsync(ct);
+                isSemaphore = true;
                 await content.CopyToAsync(destStream, ct);
             }
             catch (Exception e)
@@ -33,7 +35,7 @@ Console.CancelKeyPress += (_, e) =>
             }
             finally
             {
-                semaphore.Release();
+                if (isSemaphore) semaphore.Release();
             }
         });
     }
