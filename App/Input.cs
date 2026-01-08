@@ -29,8 +29,12 @@ public static class Input
     private static bool IsValidUrl(string url)
     {
         bool isUri = Uri.TryCreate(url, UriKind.Absolute, out var uriResult);
-        bool isHttp = uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps;
-        return isUri && isHttp;
+        if (uriResult is not null)
+        {
+            bool isHttp = uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps;
+            return isUri && isHttp;
+        }
+        return false;  
     }
     
     /// <summary>

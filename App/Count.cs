@@ -4,15 +4,17 @@ public static class Count
 {
     public static void Counter(FileInfo file)
     {
-        if (!file.Exists)
+        try
         {
-            Console.WriteLine($"Файл не существует");
-            return;
+            int count = 0;
+            using var fileStream = file.OpenRead();
+            using var reader = new StreamReader(fileStream);
+            while (reader.ReadLine() != null) count++;
+            Console.Write($"\n{count}");
         }
-        int count = 0;
-        using var stream = file.OpenRead();
-        using var reader = new StreamReader(stream);
-        while (reader.ReadLine() != null) count++;
-        Console.Write($"\n{count}");
+        catch (FileNotFoundException)
+        {
+            Console.WriteLine("Файл не найден");
+        }
     }
 }
